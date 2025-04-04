@@ -37,7 +37,6 @@
 > **"Where documents become alive with connections and knowledge"**
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x400/0A0E29/FFFFFF?text=Document+Intelligence+Framework" alt="DIF Visualization" width="800px">
 </div>
 
 <br>
@@ -47,34 +46,28 @@
 <table>
   <tr>
     <td width="33%" align="center">
-      <img src="https://via.placeholder.com/100/6A26CD/FFFFFF?text=AI" width="100px" height="100px" alt="AI Processing"><br>
       <b>AI-Powered Processing</b><br>
       <small>Advanced document understanding with neural networks</small>
     </td>
     <td width="33%" align="center">
-      <img src="https://via.placeholder.com/100/26CDBE/FFFFFF?text=KG" width="100px" height="100px" alt="Knowledge Graph"><br>
       <b>Knowledge Graph</b><br>
       <small>Dynamic entity and relationship mapping</small>
     </td>
     <td width="33%" align="center">
-      <img src="https://via.placeholder.com/100/CD2667/FFFFFF?text=VR" width="100px" height="100px" alt="Vector Retrieval"><br>
       <b>Vector Retrieval</b><br>
       <small>Semantic search with embedding technology</small>
     </td>
   </tr>
   <tr>
     <td width="33%" align="center">
-      <img src="https://via.placeholder.com/100/CDBE26/FFFFFF?text=SS" width="100px" height="100px" alt="Secure Storage"><br>
       <b>Secure Storage</b><br>
       <small>End-to-end encryption for sensitive documents</small>
     </td>
     <td width="33%" align="center">
-      <img src="https://via.placeholder.com/100/26CD55/FFFFFF?text=3D" width="100px" height="100px" alt="3D Visualization"><br>
       <b>3D Visualization</b><br>
       <small>Interactive exploration of document relationships</small>
     </td>
     <td width="33%" align="center">
-      <img src="https://via.placeholder.com/100/2667CD/FFFFFF?text=NL" width="100px" height="100px" alt="Natural Language"><br>
       <b>Natural Language</b><br>
       <small>Intuitive querying in human language</small>
     </td>
@@ -99,7 +92,6 @@
 ## 🏗️ ARCHITECTURE
 
 <div align="center">
-  <img src="https://via.placeholder.com/1000x500/0A0E29/FFFFFF?text=DIF+Architecture" width="900px" alt="Architecture Diagram">
 </div>
 
 <br>
@@ -262,22 +254,18 @@ visualize_graph(relationships)
   <table>
     <tr>
       <td align="center">
-        <img src="https://via.placeholder.com/50/26CD55/FFFFFF?text=✓" width="50px" height="50px" alt="Phase 1">
         <br><b>Phase 1</b>
         <br><small>Core Engine</small>
       </td>
       <td align="center">
-        <img src="https://via.placeholder.com/50/CDBE26/FFFFFF?text=⚙" width="50px" height="50px" alt="Phase 2">
         <br><b>Phase 2</b>
         <br><small>Advanced Features</small>
       </td>
       <td align="center">
-        <img src="https://via.placeholder.com/50/6A26CD/FFFFFF?text=⏳" width="50px" height="50px" alt="Phase 3">
         <br><b>Phase 3</b>
         <br><small>Enterprise Integration</small>
       </td>
       <td align="center">
-        <img src="https://via.placeholder.com/50/CD2667/FFFFFF?text=🔮" width="50px" height="50px" alt="Phase 4">
         <br><b>Phase 4</b>
         <br><small>AI Augmentation</small>
       </td>
@@ -308,16 +296,6 @@ Contributions are welcome! Check out our [Contribution Guidelines](CONTRIBUTING.
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 <br>
-
-<div align="center">
-  <h3>🌐 Connect With Us</h3>
-  
-  <a href="https://github.com/DeAtHfIrE26"><img src="https://via.placeholder.com/40/333/FFFFFF?text=GH" height="40px" alt="GitHub"></a>
-  <a href="#"><img src="https://via.placeholder.com/40/0A66C2/FFFFFF?text=LI" height="40px" alt="LinkedIn"></a>
-  <a href="#"><img src="https://via.placeholder.com/40/1DA1F2/FFFFFF?text=TW" height="40px" alt="Twitter"></a>
-  <a href="#"><img src="https://via.placeholder.com/40/FF4500/FFFFFF?text=RD" height="40px" alt="Reddit"></a>
-  
-  <p>
     <br>
     <em>Created with ❤️ by <a href="https://github.com/DeAtHfIrE26">DeAtHfIrE26</a></em>
     <br><br>
