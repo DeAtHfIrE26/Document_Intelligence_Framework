@@ -1,0 +1,561 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} - GraphRAG{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ document.title }}</h4>
+                    <div>
+                        {% if document.owner_id == current_user.id %}
+                        <a href="{{ url_for('web.reprocess_document', document_id=document.id) }}" class="btn btn-outline-secondary btn-sm me-2">
+                            <i class="feather icon-refresh-cw me-1"></i>Reprocess
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="feather icon-trash-2 me-1"></i>Delete
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <p class="text-muted">{{ document.description or 'No description provided.' }}</p>
+                        
+                        <div class="mb-4">
+                            <h6>Document Properties</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width: 150px;">File Type</th>
+                                            <td>{{ document.file_type|upper }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Size</th>
+                                            <td>{{ document.file_size|filesizeformat }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>MIME Type</th>
+                                            <td>{{ document.mime_type }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Language</th>
+                                            <td>{{ document.language|upper }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Created</th>
+                                            <td>{{ document.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Indexed</th>
+                                            <td>{{ document.indexed_at.strftime('%Y-%m-%d %H:%M') if document.indexed_at else 'Not indexed' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Owner</th>
+                                            <td>{{ document.owner.username if document.owner else 'Unknown' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Visibility</th>
+                                            <td>{% if document.is_public %}<span class="badge bg-success">Public</span>{% else %}<span class="badge bg-secondary">Private</span>{% endif %}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Security</th>
+                                            <td>{% if document.is_encrypted %}<span class="badge bg-info">Encrypted</span>{% else %}<span class="badge bg-secondary">Standard</span>{% endif %}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        {% if metadata %}
+                        <div class="card bg-dark mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Metadata</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="small">
+                                    {% if metadata.author %}
+                                    <div class="mb-2">
+                                        <strong>Author:</strong> {{ metadata.author }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if metadata.created_date %}
+                                    <div class="mb-2">
+                                        <strong>Created:</strong> {{ metadata.created_date.strftime('%Y-%m-%d') }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if metadata.modified_date %}
+                                    <div class="mb-2">
+                                        <strong>Modified:</strong> {{ metadata.modified_date.strftime('%Y-%m-%d') }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if metadata.page_count %}
+                                    <div class="mb-2">
+                                        <strong>Pages:</strong> {{ metadata.page_count }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if metadata.word_count %}
+                                    <div class="mb-2">
+                                        <strong>Words:</strong> {{ metadata.word_count }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if metadata.source_url %}
+                                    <div class="mb-2">
+                                        <strong>Source:</strong> 
+                                        <a href="{{ metadata.source_url }}" target="_blank" rel="noopener noreferrer">{{ metadata.source_url|truncate(30) }}</a>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if metadata.additional_metadata %}
+                                    <div class="mt-3">
+                                        <strong>Additional Metadata:</strong>
+                                        <pre class="mt-1 small bg-dark p-2">{{ metadata.additional_metadata|tojson(indent=2) }}</pre>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card bg-dark mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Collections</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if collections %}
+                                <div class="list-group small">
+                                    {% for collection in collections %}
+                                    <a href="{{ url_for('web.view_collection', collection_id=collection.id) }}" class="list-group-item list-group-item-action bg-dark">
+                                        <i class="feather icon-folder me-2"></i>{{ collection.name }}
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <p class="small text-muted">This document is not in any collection.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-dark">
+                            <div class="card-header">
+                                <h6 class="mb-0">Tags</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if tags %}
+                                <div>
+                                    {% for tag in tags %}
+                                    <span class="badge bg-primary me-2 mb-2">{{ tag.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <p class="small text-muted">No tags associated with this document.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabs for document content, entities, and knowledge graph -->
+                <ul class="nav nav-tabs" id="documentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" type="button" role="tab">
+                            <i class="feather icon-file-text me-1"></i>Content
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="entities-tab" data-bs-toggle="tab" data-bs-target="#entities" type="button" role="tab">
+                            <i class="feather icon-tag me-1"></i>Entities <span class="badge bg-info ms-1">{{ entities|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="graph-tab" data-bs-toggle="tab" data-bs-target="#graph" type="button" role="tab">
+                            <i class="feather icon-share-2 me-1"></i>Knowledge Graph
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="documentTabsContent">
+                    <!-- Content Tab -->
+                    <div class="tab-pane fade show active" id="content" role="tabpanel">
+                        <div class="my-3">
+                            <p class="text-muted small">Document content is shown in chunks as processed by the system.</p>
+                            
+                            {% if chunks %}
+                                {% for chunk in chunks %}
+                                <div class="document-chunk">
+                                    <div class="small text-muted mb-2">Chunk #{{ chunk.chunk_index + 1 }}</div>
+                                    <div class="entity-container" data-entities='{{ entities|selectattr("chunk_id", "equalto", chunk.id)|list|tojson }}'>
+                                        {{ chunk.content }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    No content chunks available for this document.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Entities Tab -->
+                    <div class="tab-pane fade" id="entities" role="tabpanel">
+                        <div class="my-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Extracted Entities</h5>
+                                <div>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary active" data-entity-filter="all">All</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-entity-filter="PERSON">Person</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-entity-filter="ORG">Organization</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-entity-filter="GPE">Location</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-entity-filter="DATE">Date</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if entities %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Entity</th>
+                                                <th>Type</th>
+                                                <th>Confidence</th>
+                                                <th>Chunk</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for entity in entities %}
+                                            <tr class="entity-row" data-entity-type="{{ entity.entity_type }}">
+                                                <td>{{ entity.name }}</td>
+                                                <td><span class="badge bg-info">{{ entity.entity_type }}</span></td>
+                                                <td>{{ '%.0f'|format(entity.confidence * 100) }}%</td>
+                                                <td>{{ entity.chunk_id }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="handleEntityClick('{{ entity.id }}')">
+                                                        <i class="feather icon-info"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    No entities extracted from this document.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Knowledge Graph Tab -->
+                    <div class="tab-pane fade" id="graph" role="tabpanel">
+                        <div class="my-3">
+                            <p class="text-muted small mb-3">
+                                This visualization shows connections between entities extracted from this document.
+                            </p>
+                            
+                            <div id="document-graph-container" style="height: 500px; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.25rem;"></div>
+                            
+                            <div class="text-center my-3" id="document-graph-loading">
+                                <div class="loader"></div>
+                                <p class="mt-2">Loading knowledge graph...</p>
+                            </div>
+                            
+                            <div class="text-center my-3 d-none" id="document-graph-empty">
+                                <i class="feather icon-info" style="font-size: 2rem;"></i>
+                                <p class="mt-2">Not enough entity connections to build a graph.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ document.title }}</strong>?</p>
+                <p class="text-danger">This action cannot be undone. All associated content will be permanently deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{{ url_for('web.delete_document', document_id=document.id) }}" class="btn btn-danger">Delete Document</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- D3.js for graph visualization -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight entities
+        highlightEntities();
+        
+        // Entity type filtering
+        const filterButtons = document.querySelectorAll('[data-entity-filter]');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filterValue = this.getAttribute('data-entity-filter');
+                const rows = document.querySelectorAll('.entity-row');
+                
+                rows.forEach(row => {
+                    if (filterValue === 'all' || row.getAttribute('data-entity-type') === filterValue) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Load document graph when the graph tab is shown
+        const graphTab = document.getElementById('graph-tab');
+        if (graphTab) {
+            graphTab.addEventListener('shown.bs.tab', function() {
+                loadDocumentGraph();
+            });
+        }
+    });
+    
+    function loadDocumentGraph() {
+        const graphContainer = document.getElementById('document-graph-container');
+        const loadingIndicator = document.getElementById('document-graph-loading');
+        const emptyIndicator = document.getElementById('document-graph-empty');
+        
+        if (!graphContainer) return;
+        
+        // Show loading
+        if (loadingIndicator) loadingIndicator.classList.remove('d-none');
+        if (emptyIndicator) emptyIndicator.classList.add('d-none');
+        
+        // Fetch graph data for this document
+        fetch(`/api/knowledge-graph/query`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                document_ids: [{{ document.id }}],
+                confidence_threshold: 0.6
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide loading
+            if (loadingIndicator) loadingIndicator.classList.add('d-none');
+            
+            if (!data.nodes || data.nodes.length < 2) {
+                // Show empty state
+                if (emptyIndicator) emptyIndicator.classList.remove('d-none');
+                return;
+            }
+            
+            // Visualize graph using D3.js
+            visualizeDocumentGraph(graphContainer, data);
+        })
+        .catch(error => {
+            console.error('Error loading document graph:', error);
+            if (loadingIndicator) loadingIndicator.classList.add('d-none');
+            if (emptyIndicator) emptyIndicator.classList.remove('d-none');
+        });
+    }
+    
+    function visualizeDocumentGraph(container, data) {
+        // Clear container
+        container.innerHTML = '';
+        
+        // Set dimensions
+        const width = container.offsetWidth;
+        const height = container.offsetHeight;
+        
+        // Create SVG element
+        const svg = d3.select(container)
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+            
+        // Define arrow markers for links
+        svg.append('defs').append('marker')
+            .attr('id', 'arrowhead')
+            .attr('viewBox', '-0 -5 10 10')
+            .attr('refX', 25)
+            .attr('refY', 0)
+            .attr('orient', 'auto')
+            .attr('markerWidth', 8)
+            .attr('markerHeight', 8)
+            .attr('xoverflow', 'visible')
+            .append('svg:path')
+            .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+            .attr('fill', '#999')
+            .style('stroke', 'none');
+            
+        // Create groups for links, nodes, and text
+        const linkGroup = svg.append('g').attr('class', 'links');
+        const nodeGroup = svg.append('g').attr('class', 'nodes');
+        const textGroup = svg.append('g').attr('class', 'texts');
+        
+        // Define node colors by entity type
+        const nodeColors = {
+            PERSON: '#4e79a7',
+            ORG: '#f28e2c',
+            ORGANIZATION: '#f28e2c',
+            GPE: '#e15759',
+            LOCATION: '#e15759',
+            DATE: '#76b7b2',
+            TIME: '#76b7b2',
+            DEFAULT: '#1f77b4'
+        };
+        
+        // Prepare nodes and links data
+        const nodes = data.nodes.map(node => ({
+            ...node,
+            radius: node.entity_type === 'PERSON' ? 10 : 8,
+            color: nodeColors[node.entity_type] || nodeColors.DEFAULT
+        }));
+        
+        const links = data.edges.map(edge => ({
+            ...edge,
+            value: edge.confidence || 0.5
+        }));
+        
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(links).id(d => d.id).distance(120))
+            .force('charge', d3.forceManyBody().strength(-800))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(30));
+            
+        // Create links
+        const linkElements = linkGroup.selectAll('line')
+            .data(links)
+            .enter()
+            .append('line')
+            .attr('stroke-width', d => Math.max(1, d.value * 3))
+            .attr('stroke', '#999')
+            .attr('stroke-opacity', 0.6)
+            .attr('marker-end', 'url(#arrowhead)')
+            .append('title')
+            .text(d => d.label);
+            
+        // Create node elements
+        const nodeElements = nodeGroup.selectAll('circle')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('r', d => d.radius)
+            .attr('fill', d => d.color)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 1.5)
+            .call(d3.drag()
+                .on('start', dragStarted)
+                .on('drag', dragging)
+                .on('end', dragEnded))
+            .on('click', nodeClicked);
+            
+        // Create text elements
+        const textElements = textGroup.selectAll('text')
+            .data(nodes)
+            .enter()
+            .append('text')
+            .text(d => d.label)
+            .attr('font-size', 10)
+            .attr('dx', d => d.radius + 5)
+            .attr('dy', 4)
+            .attr('fill', '#ddd');
+            
+        // Add tooltips
+        nodeElements.append('title')
+            .text(d => `${d.label} (${d.entity_type})`);
+            
+        // Update positions on tick
+        simulation.on('tick', () => {
+            // Constrain nodes to the viewport
+            nodes.forEach(node => {
+                node.x = Math.max(node.radius, Math.min(width - node.radius, node.x));
+                node.y = Math.max(node.radius, Math.min(height - node.radius, node.y));
+            });
+            
+            linkElements
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+                
+            nodeElements
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+                
+            textElements
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        });
+        
+        // Handle zoom and pan
+        const zoom = d3.zoom()
+            .scaleExtent([0.2, 8])
+            .on('zoom', event => {
+                linkGroup.attr('transform', event.transform);
+                nodeGroup.attr('transform', event.transform);
+                textGroup.attr('transform', event.transform);
+            });
+            
+        svg.call(zoom);
+        
+        // Drag functions
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        
+        function dragging(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+        
+        function dragEnded(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+        
+        function nodeClicked(event, d) {
+            // Extract entity ID from node ID (format: "entity_123")
+            const entityId = d.id.split('_')[1];
+            if (entityId) {
+                handleEntityClick(entityId);
+            }
+        }
+    }
+</script>
+{% endblock %}

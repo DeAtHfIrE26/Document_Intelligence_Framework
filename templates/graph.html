@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Graph - GraphRAG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .entity-selector {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .entity-selector:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+    
+    .info-panel {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 0.25rem;
+    }
+    
+    .connection-item:hover {
+        background-color: rgba(var(--bs-info-rgb), 0.1) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Knowledge Graph Explorer</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-dark">
+                            <div class="card-header">
+                                <h5 class="mb-0">Entity Selection</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small">Select an entity to visualize its connections in the knowledge graph.</p>
+                                
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="entity-search" placeholder="Search entities...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="feather icon-search"></i>
+                                    </button>
+                                </div>
+                                
+                                <div id="entity-search-results" class="mb-3">
+                                    <!-- Search results will appear here -->
+                                </div>
+                                
+                                <h6 class="mb-2">Initial Entities</h6>
+                                <div id="initial-entities" data-entities='{{ initial_entities|tojson }}'>
+                                    <div class="list-group">
+                                        {% for entity in initial_entities %}
+                                        <div class="list-group-item bg-dark entity-selector" onclick="exploreEntity({{ entity.id }})">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge bg-info me-2">{{ entity.entity_type }}</span>
+                                                    <strong>{{ entity.name }}</strong>
+                                                </div>
+                                                <span class="badge bg-secondary">{{ '%.0f'|format(entity.confidence * 100) }}%</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-dark mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Graph Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th>Total Nodes</th>
+                                                <td>{{ graph_stats.num_nodes|default('N/A') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Total Edges</th>
+                                                <td>{{ graph_stats.num_edges|default('N/A') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Connected Components</th>
+                                                <td>{{ graph_stats.num_connected_components|default('N/A') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Graph Density</th>
+                                                <td>{{ '%.4f'|format(graph_stats.density|default(0)) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                {% if graph_stats.entity_types %}
+                                <h6 class="mt-3 mb-2">Entity Types</h6>
+                                <div class="row">
+                                    {% for type, count in graph_stats.entity_types.items() %}
+                                    <div class="col-6">
+                                        <div class="d-flex justify-content-between">
+                                            <span>{{ type }}</span>
+                                            <span class="badge bg-secondary">{{ count }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
+                                {% if graph_stats.relationship_types %}
+                                <h6 class="mt-3 mb-2">Relationship Types</h6>
+                                <div class="row">
+                                    {% for type, count in graph_stats.relationship_types.items() %}
+                                    <div class="col-6">
+                                        <div class="d-flex justify-content-between">
+                                            <span>{{ type|replace('_', ' ')|title }}</span>
+                                            <span class="badge bg-secondary">{{ count }}</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card bg-dark">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Knowledge Graph Visualization</h5>
+                                    <div>
+                                        <button id="reset-view-button" class="btn btn-sm btn-outline-secondary me-2">
+                                            <i class="feather icon-maximize me-1"></i>Reset View
+                                        </button>
+                                        <button id="apply-layout-button" class="btn btn-sm btn-outline-info">
+                                            <i class="feather icon-refresh-cw me-1"></i>Reapply Layout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="graph-controls p-3 border-bottom border-secondary">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label for="entity-type-filter" class="form-label">Entity Type Filter</label>
+                                            <select id="entity-type-filter" class="form-select form-select-sm">
+                                                <option value="all">All Entity Types</option>
+                                                {% for entity_type in entity_types %}
+                                                <option value="{{ entity_type }}">{{ entity_type }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="relationship-filter" class="form-label">Relationship Filter</label>
+                                            <select id="relationship-filter" class="form-select form-select-sm">
+                                                <option value="all">All Relationships</option>
+                                                {% for rel_type in relationship_types %}
+                                                <option value="{{ rel_type }}">{{ rel_type|replace('_', ' ')|title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="max-hops-slider" class="form-label">Max Hops: <span id="max-hops-value">2</span></label>
+                                            <input type="range" class="form-range" min="1" max="4" value="2" id="max-hops-slider">
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div id="current-entity-display" class="small text-muted"></div>
+                                    </div>
+                                </div>
+                                
+                                <div id="graph-container" class="graph-container"></div>
+                                
+                                <div id="graph-loading-indicator" class="loader-container" style="display: none;">
+                                    <div class="loader"></div>
+                                    <p class="mt-2">Loading graph data...</p>
+                                </div>
+                                
+                                <div id="graph-error-message" class="alert alert-danger m-3" style="display: none;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-dark mt-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Entity Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="entity-info-panel" class="info-panel p-3">
+                                    <div class="text-center py-4">
+                                        <i class="feather icon-info me-2"></i>
+                                        Select an entity in the graph to view its details and connections.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- D3.js for graph visualization -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="{{ url_for('static', filename='js/visualization.js') }}"></script>
+{% endblock %}

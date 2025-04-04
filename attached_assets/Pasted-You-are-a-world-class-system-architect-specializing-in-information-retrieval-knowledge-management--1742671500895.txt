@@ -1,0 +1,84 @@
+You are a world-class system architect specializing in information retrieval, knowledge management, NLP, and distributed systems. You have pioneered breakthrough approaches in search technologies that combine knowledge graphs, vector embeddings, and large language models.
+
+TASK: Design the most advanced document retrieval system possible using cutting-edge techniques, algorithms, and architectures. This system should represent at least a 100x improvement over conventional document search systems in terms of accuracy, relevance, context-awareness, and knowledge integration.
+
+CORE REQUIREMENTS:
+1. ARCHITECTURE
+   - Design a comprehensive technical architecture including all components, services, and data flows
+   - Specify the optimal database technologies (graph, vector, relational) for different system aspects
+   - Create a microservices breakdown with clear responsibilities for each service
+   - Detail the integration patterns between components
+   - Explain containerization and orchestration approach
+
+2. RETRIEVAL MECHANISMS
+   - Implement GraphRAG (Retrieval Augmented Generation) with knowledge graph integration
+   - Design multi-hop reasoning capabilities that can connect information across documents
+   - Create a hybrid retrieval approach combining semantic and keyword-based search
+   - Develop advanced reranking systems that optimize result relevance
+   - Implement hypothetical document question generation for improved contextual search
+
+3. AI & ML COMPONENTS
+   - Detail the embedding models and vector representation approaches
+   - Specify LLM integration for query understanding and response generation
+   - Design self-improving mechanisms that learn from user interactions
+   - Implement entity extraction and relationship mapping capabilities
+   - Create contextual understanding systems that capture document semantics
+
+4. DATA PROCESSING PIPELINE
+   - Design the document ingestion workflow from raw content to knowledge graph
+   - Implement multi-modal processing for text, images, audio, and video content
+   - Create metadata extraction and enrichment processes
+   - Design incremental update mechanisms that maintain system freshness
+   - Implement data validation and quality assurance processes
+
+5. KNOWLEDGE GRAPH FOUNDATION
+   - Design the ontology and schema for the knowledge graph
+   - Create the entity and relationship extraction methodology
+   - Implement automatic knowledge graph construction from unstructured text
+   - Design knowledge fusion mechanisms that integrate information across sources
+   - Implement reasoning capabilities that leverage graph structures
+
+6. QUERY PROCESSING
+   - Design advanced query understanding mechanisms
+   - Implement query transformation and expansion techniques
+   - Create natural language to query language translation
+   - Design conversational context maintenance for multi-turn interactions
+   - Implement intent recognition for improved search precision
+
+7. SECURITY & COMPLIANCE
+   - Detail access control and document-level permissions
+   - Design encryption protocols for sensitive content
+   - Implement audit logging and compliance reporting
+   - Create privacy-preserving search capabilities
+   - Design ethical AI usage guidelines and safeguards
+
+8. SCALABILITY & PERFORMANCE
+   - Design horizontal scaling approaches for all components
+   - Create caching strategies that optimize frequent queries
+   - Implement performance monitoring and optimization processes
+   - Design fault tolerance and high availability mechanisms
+   - Specify resource requirements and infrastructure scaling
+
+9. USER EXPERIENCE
+   - Design the API interfaces for system integration
+   - Create personalization mechanisms that adapt to user needs
+   - Implement explainable AI features that clarify search results
+   - Design visualization capabilities for knowledge exploration
+   - Create feedback mechanisms for continuous improvement
+
+10. EVALUATION & METRICS
+    - Define key performance indicators for system evaluation
+    - Design benchmark tests that demonstrate system capabilities
+    - Create comparative analysis against existing solutions
+    - Implement continuous evaluation processes
+    - Design user satisfaction measurement approaches
+
+ADDITIONAL CONSIDERATIONS:
+- The system should operate efficiently across cloud and on-premise environments
+- It must handle multilingual content with equal proficiency
+- The design should incorporate future-proofing for emerging AI technologies
+- It should have minimal latency while maintaining high accuracy
+- The system should provide transparent sourcing and confidence metrics
+
+DELIVERABLE:
+Provide a comprehensive system design document that covers all aspects above. Include component diagrams (described in text), data flows, technology selections with justifications, implementation approaches, and potential challenges with mitigation strategies. The design should be both theoretically sound and practically implementable, representing a true next-generation document retrieval system that far exceeds current capabilities.

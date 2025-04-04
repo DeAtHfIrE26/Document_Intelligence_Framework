@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Search Documents - GraphRAG{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Document Search</h4>
+            </div>
+            <div class="card-body">
+                <form id="search-form" action="{{ url_for('web.search') }}" method="post">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-lg" id="search-input" name="query" placeholder="Enter your search query..." value="{{ query }}">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="feather icon-search me-1"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select name="collection_id" class="form-select">
+                                <option value="all">All Collections</option>
+                                {% for collection in collections %}
+                                <option value="{{ collection.id }}" {% if selected_collection == collection.id|string %}selected{% endif %}>{{ collection.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Search Options</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Search Mode</label>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="search_mode" id="mode_hybrid" value="hybrid" {% if not search_mode or search_mode == 'hybrid' %}checked{% endif %}>
+                                                    <label class="form-check-label" for="mode_hybrid">
+                                                        <i class="feather icon-layers me-1"></i>Hybrid
+                                                    </label>
+                                                    <small class="d-block text-muted">Combines multiple strategies</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="search_mode" id="mode_vector" value="vector" {% if search_mode == 'vector' %}checked{% endif %}>
+                                                    <label class="form-check-label" for="mode_vector">
+                                                        <i class="feather icon-cpu me-1"></i>Vector
+                                                    </label>
+                                                    <small class="d-block text-muted">Semantic similarity</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="search_mode" id="mode_keyword" value="keyword" {% if search_mode == 'keyword' %}checked{% endif %}>
+                                                    <label class="form-check-label" for="mode_keyword">
+                                                        <i class="feather icon-type me-1"></i>Keyword
+                                                    </label>
+                                                    <small class="d-block text-muted">Traditional search</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Document Type</label>
+                                        <select name="document_type" class="form-select">
+                                            <option value="all">All Types</option>
+                                            <option value="pdf" {% if selected_type == 'pdf' %}selected{% endif %}>PDF</option>
+                                            <option value="docx" {% if selected_type == 'docx' %}selected{% endif %}>Word (DOCX)</option>
+                                            <option value="txt" {% if selected_type == 'txt' %}selected{% endif %}>Text (TXT)</option>
+                                            <option value="md" {% if selected_type == 'md' %}selected{% endif %}>Markdown (MD)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-dark">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Advanced Features</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="multi-hop-toggle" name="multi_hop" value="true" {% if multi_hop %}checked{% endif %}>
+                                        <label class="form-check-label" for="multi-hop-toggle">
+                                            <i class="feather icon-share-2 me-1"></i>Enable Multi-hop Reasoning
+                                        </label>
+                                        <div id="multi-hop-info" class="form-text {% if not multi_hop %}d-none{% endif %}">
+                                            Multi-hop reasoning discovers connections across documents through entity relationships.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="generate-answer-toggle" name="generate_answer" value="true" {% if generate_answer %}checked{% endif %}>
+                                        <label class="form-check-label" for="generate-answer-toggle">
+                                            <i class="feather icon-cpu me-1"></i>Generate AI Answer
+                                        </label>
+                                        <div class="form-text">
+                                            Use AI to generate a comprehensive answer based on search results.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="feather icon-search me-2"></i>Search Documents
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div id="search-loading" class="text-center my-5 {% if not results %}d-none{% endif %}">
+            <div class="loader"></div>
+            <p class="mt-3">Searching documents and building knowledge connections...</p>
+        </div>
+        
+        <!-- Search results -->
+        <div id="search-results" class="mt-4 {% if not results %}d-none{% endif %}">
+            <!-- AI Generated Answer if available -->
+            {% if answer %}
+            <div class="answer-box">
+                <div class="answer-title">
+                    <i class="feather icon-cpu me-2"></i>AI-Generated Answer
+                </div>
+                <div class="answer-content">
+                    {{ answer }}
+                </div>
+                <div class="answer-sources">
+                    <strong>Sources:</strong>
+                    {% if sources %}
+                        {% for source in sources %}
+                        <a href="{{ url_for('web.view_document', document_id=source.id) }}" class="badge bg-secondary me-1">{{ source.title }}</a>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No specific sources cited</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Results header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    {% if results %}
+                    Found {{ total_results }} results ({{ '%.3f'|format(elapsed_time) }} seconds)
+                    {% endif %}
+                </h5>
+            </div>
+            
+            <!-- Results list -->
+            {% if results %}
+                {% for result in results %}
+                <div id="search-result-{{ loop.index }}" class="search-result" 
+                     {% if result.reasoning_paths %}
+                     {% for path in result.reasoning_paths %}
+                     data-reasoning-path-{{ loop.index0 }}='{{ path|tojson }}'
+                     {% endfor %}
+                     {% endif %}>
+                    <div class="d-flex">
+                        <div class="search-score {% if result.score >= 0.8 %}search-score-high{% elif result.score >= 0.5 %}search-score-medium{% else %}search-score-low{% endif %}">
+                            {{ '%.0f'|format(result.score * 100) }}
+                        </div>
+                        <div>
+                            <h5 class="result-title">
+                                <a href="{{ url_for('web.view_document', document_id=result.document_id) }}">{{ result.document_title }}</a>
+                            </h5>
+                            <div class="result-content">{{ result.content }}</div>
+                            <div class="result-meta">
+                                <span class="badge bg-info">{{ result.strategy }}</span>
+                                {% if result.matching_strategies %}
+                                    {% for strategy in result.matching_strategies %}
+                                        {% if strategy != result.strategy %}
+                                        <span class="badge bg-secondary">{{ strategy }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                
+                                {% if result.reasoning_paths %}
+                                <div class="mt-2">
+                                    <div class="small text-muted mb-1">
+                                        <i class="feather icon-share-2 me-1"></i>Multi-hop connections found:
+                                    </div>
+                                    <div>
+                                        {% for path in result.reasoning_paths %}
+                                        <button class="btn btn-sm btn-outline-info me-2 mb-2" 
+                                                onclick="showReasoningPath({{ loop.index0 }}, {{ loop.parent.loop.index }})">
+                                            Reasoning Path {{ loop.index }}
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% elif query %}
+                <div class="alert alert-info">
+                    <i class="feather icon-info me-2"></i>No results found for your query. Try different search terms or options.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

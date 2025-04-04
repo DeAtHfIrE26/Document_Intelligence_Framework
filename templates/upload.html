@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Document - GraphRAG{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Upload Document</h4>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('web.upload') }}" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="file" name="file" required>
+                        <div class="form-text">Supported file types: PDF, DOCX, TXT, MD, JPG, PNG</div>
+                    </div>
+                    
+                    <div id="file-preview" class="mb-3 d-none">
+                        <!-- File preview will be added here by JavaScript -->
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="Document title (leave empty to use filename)">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Optional document description"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Collections</label>
+                        <div class="row">
+                            {% if collections %}
+                                {% for collection in collections %}
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="collection_ids" id="collection_{{ collection.id }}" value="{{ collection.id }}">
+                                        <label class="form-check-label" for="collection_{{ collection.id }}">
+                                            {{ collection.name }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="col-12">
+                                    <p class="text-muted">No collections available. <a href="{{ url_for('web.collections') }}">Create a collection</a> first.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tag-input" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tag-input" placeholder="Enter tags (press Enter or comma to add)">
+                        <div id="tag-container" class="mt-2">
+                            <!-- Tags will be added here by JavaScript -->
+                        </div>
+                        <input type="hidden" name="tags" id="tags" value="">
+                        
+                        <div class="mt-2">
+                            <div class="mb-1">Popular tags:</div>
+                            {% for tag in tags %}
+                            <span class="badge bg-secondary me-1 mb-1" style="cursor: pointer;" onclick="addTag('{{ tag.name }}')">{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" value="true">
+                            <label class="form-check-label" for="is_public">
+                                Make document public
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_encrypted" name="is_encrypted" value="true">
+                            <label class="form-check-label" for="is_encrypted">
+                                Encrypt document storage
+                            </label>
+                        </div>
+                        <div class="form-text">Encrypted documents have additional security but may take longer to process.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="feather icon-upload me-2"></i>Upload Document
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Processing Information</h5>
+            </div>
+            <div class="card-body">
+                <p>When you upload a document, the system will:</p>
+                <ul>
+                    <li>Extract text and metadata from your document</li>
+                    <li>Split the document into semantic chunks for efficient retrieval</li>
+                    <li>Identify entities (people, organizations, locations, etc.)</li>
+                    <li>Generate vector embeddings for semantic search</li>
+                    <li>Build knowledge graph connections between entities</li>
+                </ul>
+                <p>This process may take some time depending on the document size and complexity.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to add a tag from the popular tags section
+    function addTag(tagName) {
+        const tagInput = document.getElementById('tag-input');
+        tagInput.value = tagName;
+        
+        // Trigger the Enter key event
+        const event = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            code: 'Enter',
+            which: 13,
+            keyCode: 13,
+            bubbles: true
+        });
+        tagInput.dispatchEvent(event);
+    }
+</script>
+{% endblock %}

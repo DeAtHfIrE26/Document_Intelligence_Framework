@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}GraphRAG - Advanced Document Retrieval System{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1>GraphRAG Document Retrieval</h1>
+                <p class="lead">
+                    An advanced document retrieval system powered by Knowledge Graphs, 
+                    Vector Embeddings, and Large Language Models for intelligent, 
+                    context-aware search across your documents.
+                </p>
+                
+                {% if current_user.is_authenticated %}
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{{ url_for('web.search') }}" class="btn btn-primary btn-lg px-4 gap-3">
+                        <i class="feather icon-search me-2"></i>Search Documents
+                    </a>
+                    <a href="{{ url_for('web.upload') }}" class="btn btn-outline-info btn-lg px-4">
+                        <i class="feather icon-upload me-2"></i>Upload Document
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{{ url_for('web.login') }}" class="btn btn-primary btn-lg px-4 gap-3">
+                        <i class="feather icon-log-in me-2"></i>Log In
+                    </a>
+                    <a href="{{ url_for('web.register') }}" class="btn btn-outline-info btn-lg px-4">
+                        <i class="feather icon-user-plus me-2"></i>Register
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="row mt-5">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Documents</h5>
+                <a href="{{ url_for('web.documents') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_documents %}
+                <div class="list-group">
+                    {% for document in recent_documents %}
+                    <a href="{{ url_for('web.view_document', document_id=document.id) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ document.title }}</h6>
+                            <small>{{ document.file_type.upper() }}</small>
+                        </div>
+                        <p class="mb-1 text-truncate">{{ document.description or 'No description' }}</p>
+                        <small>{{ document.created_at.strftime('%Y-%m-%d %H:%M') if document.created_at else 'Unknown date' }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="feather icon-file-text mb-3" style="font-size: 2rem;"></i>
+                    <p>No documents found. Start by <a href="{{ url_for('web.upload') }}">uploading a document</a>.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Searches</h5>
+                <a href="{{ url_for('web.search') }}" class="btn btn-sm btn-outline-primary">Search</a>
+            </div>
+            <div class="card-body">
+                {% if recent_searches %}
+                <div class="list-group">
+                    {% for search in recent_searches %}
+                    <a href="{{ url_for('web.search') }}?q={{ search.original_query|urlencode }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ search.original_query }}</h6>
+                            <small>{{ search.created_at.strftime('%Y-%m-%d %H:%M') if search.created_at else 'Unknown date' }}</small>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="feather icon-search mb-3" style="font-size: 2rem;"></i>
+                    <p>No recent searches. <a href="{{ url_for('web.search') }}">Try searching</a> for something.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Your Collections</h5>
+                <a href="{{ url_for('web.collections') }}" class="btn btn-sm btn-outline-primary">Manage</a>
+            </div>
+            <div class="card-body">
+                {% if collections %}
+                <div class="list-group">
+                    {% for collection in collections %}
+                    <a href="{{ url_for('web.view_collection', collection_id=collection.id) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ collection.name }}</h6>
+                            <small>{{ collection.documents.count() }} documents</small>
+                        </div>
+                        <p class="mb-1 text-truncate">{{ collection.description or 'No description' }}</p>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="feather icon-folder mb-3" style="font-size: 2rem;"></i>
+                    <p>No collections found. Create your first collection to organize documents.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Search</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('web.search') }}" method="post">
+                    <div class="mb-3">
+                        <label for="query" class="form-label">Search Query</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="query" name="query" placeholder="Enter your search query...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="feather icon-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="search_mode" id="search_hybrid" value="hybrid" checked>
+                            <label class="form-check-label" for="search_hybrid">Hybrid</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="search_mode" id="search_vector" value="vector">
+                            <label class="form-check-label" for="search_vector">Vector</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="search_mode" id="search_keyword" value="keyword">
+                            <label class="form-check-label" for="search_keyword">Keyword</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="generate_answer" id="generate_answer" value="true">
+                        <label class="form-check-label" for="generate_answer">
+                            Generate answer with AI
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Features for non-authenticated users -->
+<div class="row mt-5">
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="feather icon-search" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title">Advanced Search</h4>
+                <p class="card-text">
+                    Hybrid search combining semantic understanding with traditional keyword search for the most relevant results.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="feather icon-share-2" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title">Knowledge Graph</h4>
+                <p class="card-text">
+                    Visualize connections between documents and entities to discover hidden relationships and insights.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="feather icon-cpu" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="card-title">AI-Powered Analysis</h4>
+                <p class="card-text">
+                    Get AI-generated answers and insights from your documents with context-aware reasoning.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header text-center">
+                <h5 class="mb-0">Get Started Today</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead">
+                    Create your account to start organizing, searching, and analyzing your documents with GraphRAG.
+                </p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{{ url_for('web.login') }}" class="btn btn-primary px-4 gap-3">
+                        <i class="feather icon-log-in me-2"></i>Log In
+                    </a>
+                    <a href="{{ url_for('web.register') }}" class="btn btn-outline-info px-4">
+                        <i class="feather icon-user-plus me-2"></i>Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

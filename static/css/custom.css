@@ -1,0 +1,332 @@
+/* Custom CSS extending Bootstrap */
+
+/* Use Bootstrap dark theme variables */
+:root {
+  --bs-primary-rgb: 13, 110, 253;
+  --bs-secondary-rgb: 108, 117, 125;
+  --bs-success-rgb: 25, 135, 84;
+  --bs-info-rgb: 13, 202, 240;
+  --bs-warning-rgb: 255, 193, 7;
+  --bs-danger-rgb: 220, 53, 69;
+  --bs-light-rgb: 248, 249, 250;
+  --bs-dark-rgb: 33, 37, 41;
+}
+
+/* General styles */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+.content-container {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Navbar customization */
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Card customization */
+.card {
+  margin-bottom: 1rem;
+  transition: transform 0.2s ease-in-out;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  font-weight: 600;
+}
+
+/* Custom component: Document card */
+.document-card {
+  margin-bottom: 1.5rem;
+}
+
+.document-card .card-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.document-card .document-meta {
+  color: var(--bs-secondary);
+  font-size: 0.875rem;
+}
+
+.document-card .document-tags {
+  margin-top: 0.5rem;
+}
+
+.document-card .document-tags .badge {
+  margin-right: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Search results */
+.search-result {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--bs-primary);
+  background-color: rgba(var(--bs-light-rgb), 0.05);
+  border-radius: 0.25rem;
+}
+
+.search-result .result-title {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.search-result .result-content {
+  margin-bottom: 0.5rem;
+}
+
+.search-result .result-meta {
+  font-size: 0.875rem;
+  color: var(--bs-secondary);
+}
+
+.search-score {
+  display: inline-block;
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  text-align: center;
+  border-radius: 50%;
+  font-weight: bold;
+  color: white;
+  margin-right: 0.5rem;
+}
+
+.search-score-high {
+  background-color: rgba(var(--bs-success-rgb), 0.8);
+}
+
+.search-score-medium {
+  background-color: rgba(var(--bs-info-rgb), 0.8);
+}
+
+.search-score-low {
+  background-color: rgba(var(--bs-secondary-rgb), 0.8);
+}
+
+/* Knowledge graph visualization */
+.graph-container {
+  height: 70vh;
+  min-height: 400px;
+  border: 1px solid rgba(var(--bs-light-rgb), 0.1);
+  border-radius: 0.25rem;
+  background-color: rgba(var(--bs-dark-rgb), 0.4);
+}
+
+.graph-controls {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: rgba(var(--bs-light-rgb), 0.05);
+  border-radius: 0.25rem;
+}
+
+.entity-node {
+  cursor: pointer;
+}
+
+.entity-tooltip {
+  position: absolute;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(var(--bs-dark-rgb), 0.9);
+  color: white;
+  font-size: 0.875rem;
+  pointer-events: none;
+  max-width: 200px;
+  z-index: 1000;
+}
+
+/* Entity highlighting */
+.entity-highlight {
+  background-color: rgba(var(--bs-info-rgb), 0.2);
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  margin: 0 0.125rem;
+  border: 1px solid rgba(var(--bs-info-rgb), 0.4);
+}
+
+.entity-PERSON {
+  background-color: rgba(var(--bs-primary-rgb), 0.2);
+  border-color: rgba(var(--bs-primary-rgb), 0.4);
+}
+
+.entity-ORG, .entity-ORGANIZATION {
+  background-color: rgba(var(--bs-success-rgb), 0.2);
+  border-color: rgba(var(--bs-success-rgb), 0.4);
+}
+
+.entity-GPE, .entity-LOCATION {
+  background-color: rgba(var(--bs-warning-rgb), 0.2);
+  border-color: rgba(var(--bs-warning-rgb), 0.4);
+}
+
+.entity-DATE, .entity-TIME {
+  background-color: rgba(var(--bs-danger-rgb), 0.2);
+  border-color: rgba(var(--bs-danger-rgb), 0.4);
+}
+
+/* Reasoning paths */
+.reasoning-path {
+  margin: 1rem 0;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(var(--bs-dark-rgb), 0.2);
+}
+
+.reasoning-path-step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.reasoning-path-arrow {
+  margin: 0 0.5rem;
+  color: var(--bs-secondary);
+}
+
+/* Document chunks */
+.document-chunk {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+  background-color: rgba(var(--bs-light-rgb), 0.05);
+  border-left: 3px solid rgba(var(--bs-secondary-rgb), 0.5);
+}
+
+.document-chunk:hover {
+  background-color: rgba(var(--bs-light-rgb), 0.1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(var(--bs-dark-rgb), 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--bs-secondary-rgb), 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--bs-secondary-rgb), 0.7);
+}
+
+/* Loader component */
+.loader {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid rgba(var(--bs-light-rgb), 0.2);
+  border-radius: 50%;
+  border-top-color: var(--bs-primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+/* Answer box for LLM responses */
+.answer-box {
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+}
+
+.answer-box .answer-title {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: rgba(var(--bs-primary-rgb), 1);
+}
+
+.answer-box .answer-content {
+  margin-bottom: 1rem;
+  white-space: pre-line;
+}
+
+.answer-box .answer-sources {
+  font-size: 0.875rem;
+  color: var(--bs-secondary);
+}
+
+/* File type icons */
+.file-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.5rem;
+  margin-right: 1rem;
+}
+
+.file-icon-pdf {
+  background-color: rgba(var(--bs-danger-rgb), 0.2);
+  color: rgba(var(--bs-danger-rgb), 1);
+}
+
+.file-icon-doc, .file-icon-docx {
+  background-color: rgba(var(--bs-primary-rgb), 0.2);
+  color: rgba(var(--bs-primary-rgb), 1);
+}
+
+.file-icon-txt, .file-icon-md {
+  background-color: rgba(var(--bs-secondary-rgb), 0.2);
+  color: rgba(var(--bs-secondary-rgb), 1);
+}
+
+.file-icon-image {
+  background-color: rgba(var(--bs-success-rgb), 0.2);
+  color: rgba(var(--bs-success-rgb), 1);
+}
+
+/* Landing page hero section */
+.hero {
+  padding: 4rem 0;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1) 0%, rgba(var(--bs-info-rgb), 0.1) 100%);
+  border-radius: 0.5rem;
+}
+
+.hero h1 {
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  max-width: 800px;
+}
